@@ -1,0 +1,37 @@
+version: '3.4'
+
+services:
+  zaliczenie:
+    image: ${DOCKER_REGISTRY-}zaliczenie
+    build:
+      context: zaliczenie
+      dockerfile: Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+    networks:
+      - app-network
+    depends_on: 
+    - db
+    volumes:
+      - ./:/app
+      - ./logs:/app/logs
+  db:
+    image: mysql:8.0.39
+    environment:
+      MYSQL_ROOT_PASSWORD: "password"
+      MYSQL_DATABASE: "blazor"
+      MYSQL_USER: "user"
+      MYSQL_PASSWORD: "passwd"
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql_data:/var/lib/mysql
+    networks:
+      - app-network
+
+volumes:
+  mysql_data:
+
+networks:
+  app-network:
+    

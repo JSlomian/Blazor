@@ -1,0 +1,66 @@
+﻿@page "/create-admin"
+@using Microsoft.AspNetCore.Identity
+@using zaliczenie.Data
+@inject AdminService AdminService
+@inject NavigationManager NavigationManager
+@inject UserManager<ApplicationUser> UserManager
+@inject RoleManager<IdentityRole> RoleManager
+@inject IUserStore<ApplicationUser> UserStore
+
+<h3>Create Admin Account</h3>
+
+@if (!String.IsNullOrEmpty(statusMessage))
+{
+    <p>@statusMessage</p>
+}
+else
+{
+    <button @onclick="CreateAdminAccount">Create Admin Account</button>
+}
+
+@code {
+    private string statusMessage = String.Empty;
+
+    private async Task CreateAdminAccount()
+    {
+        statusMessage = "asd";
+        try
+        {
+            await CreateAdminAsync();
+            statusMessage = "Admin account created successfully. Login: admin@example.com Password: QWEasd123!";
+        }
+        catch (Exception ex)
+        {
+            statusMessage = $"Error: {ex.Message}";
+        }
+
+        StateHasChanged();  // Trigger a UI refresh at the end of the method
+    }
+
+    public async Task CreateAdminAsync()
+    {
+        statusMessage = "asd";
+        var adminUser = await UserManager.FindByEmailAsync("admin@example.com");
+        if (adminUser == null)
+        {
+            adminUser = Activator.CreateInstance<ApplicationUser>();
+            adminUser.UserName = "admin@example.com";
+            adminUser.Email = "admin@example.com";
+            adminUser.EmailConfirmed = true;
+
+            var result = await UserManager.CreateAsync(adminUser, "QWEasd123!");
+            var roleName = "Admin";
+
+            // Check if the role exists
+            if (!await RoleManager.RoleExistsAsync(roleName))
+            {
+                // If the role doesn't exist, create it
+                await RoleManager.CreateAsync(new IdentityRole(roleName));
+            }
+            if (result.Succeeded)
+            {
+                await UserManager.AddToRoleAsync(adminUser, "Admin");
+            }
+        }
+    }
+}
